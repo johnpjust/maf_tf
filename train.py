@@ -1,4 +1,5 @@
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 import numpy as np
 import numpy.random as rng
 import os
@@ -54,7 +55,7 @@ class Trainer:
             
             
     def train(self, sess, train_data, val_data=None, p_val = 0.05, max_iterations=1000, batch_size=100,
-              early_stopping=20, check_every_N=5, saver_name='tmp_model', show_log=False):
+              early_stopping=20, check_every_N=5, saver_name='tmp_model', show_log=False, test_data=None):
         """
         Training function to be called with desired parameters within a tensorflow session.
         :param sess: tensorflow session where the graph is run.
@@ -75,12 +76,12 @@ class Trainer:
         
         # If no validation data was found, split training into training and 
         # validation data using p_val percent of the data
-        if val_data == None:
+        if type(val_data) != np.ndarray:
             rng.shuffle(train_idx)
             val_data = train_data[train_idx[-int(p_val*train_data.shape[0]):]]
             train_data = train_data[train_idx[:-int(p_val*train_data.shape[0])]]
             train_idx = np.arange(train_data.shape[0])
-        
+
         # Early stopping variables
         bst_loss = np.infty
         early_stopping_count = 0
@@ -103,7 +104,9 @@ class Trainer:
                 this_loss = sess.run(self.model.trn_loss,feed_dict={self.model.input:val_data})
                 if show_log:
                     train_loss = sess.run(self.model.trn_loss,feed_dict={self.model.input:train_data})
-                    print("Iteration {:05d}, Train_loss: {:05.4f}, Val_loss: {:05.4f}".format(iteration,train_loss,this_loss))
+                    if type(test_data) == np.ndarray:
+                        that_loss = sess.run(self.model.trn_loss, feed_dict={self.model.input: test_data})
+                    print("Iteration {:05d}, Train_loss: {:05.4f}, Val_loss: {:05.4f}, , Test_loss: {:05.4f}".format(iteration,train_loss,this_loss, that_loss))
                 if this_loss < bst_loss:
                     bst_loss = this_loss
                     saver.save(sess,"./"+saver_name)

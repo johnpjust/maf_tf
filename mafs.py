@@ -1,6 +1,7 @@
 import numpy as np
 import numpy.random as rng
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 
 import mades
 
@@ -77,7 +78,6 @@ class MaskedAutoregressiveFlow:
         self.act_fun = act_fun
         self.n_mades = n_mades
         self.batch_norm = batch_norm
-        self.momentum = momentum
         self.mode = mode
 
         self.input = tf.placeholder(dtype=dtype,shape=[None,n_inputs],name='x') if input is None else input
@@ -98,7 +98,8 @@ class MaskedAutoregressiveFlow:
             self.mades.append(made)
             self.parms += made.parms
             # invert input order
-            input_order = input_order if input_order == 'random' else made.input_order[::-1]
+            # input_order = input_order if input_order == 'random' else made.input_order[::-1]
+            input_order = 'random'
 
             # inverse autoregressive transform
             self.u = made.u
