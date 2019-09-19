@@ -19,10 +19,10 @@ def read_idx(filename):
 data = []
 for f in fnames_data:
     data.append(read_idx(f))
-val = data[1].reshape((data[1].shape[0], -1))
+val = data[1].reshape((data[1].shape[0], -1))/128. - 1.
 test = np.concatenate(data[2:])
-test = test.reshape((test.shape[0],-1))
-data = data[0].reshape((data[0].shape[0],-1))
+test = test.reshape((test.shape[0],-1))/128. - 1.
+data = data[0].reshape((data[0].shape[0],-1))/128. - 1.
 
 ## Generate data -- as in Figure 1 in [Papamakarios et al. (2017)][2]).
 # # n = 2000
