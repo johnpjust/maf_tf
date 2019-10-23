@@ -59,7 +59,7 @@ class MaskedAutoregressiveFlow:
     """
 
     def __init__(self, n_inputs, n_hiddens, act_fun, n_mades, batch_norm=False,
-                 input_order='sequential', mode='sequential', input=None):
+                 input_order='sequential', mode='sequential', input=None, SCE=False):
         """
         Constructor.
         :param n_inputs: number of inputs
@@ -94,7 +94,7 @@ class MaskedAutoregressiveFlow:
         for i in range(n_mades):
 
             # create a new made
-            made = mades.GaussianMade(n_inputs, n_hiddens, act_fun, input_order, mode, self.u)
+            made = mades.GaussianMade(n_inputs, n_hiddens, act_fun, input_order, mode, self.u, SCE=SCE)
             self.mades.append(made)
             self.parms += made.parms
             # invert input order

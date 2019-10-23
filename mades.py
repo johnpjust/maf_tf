@@ -73,7 +73,7 @@ def create_masks(degrees):
 
     return Ms, Mmp
 
-def create_weights(n_inputs, n_hiddens, n_comps):
+def create_weights(n_inputs, n_hiddens, n_comps, SCE=False):
     """
     Creates all learnable weight matrices and bias vectors.
     :param n_inputs: the number of inputs
@@ -87,30 +87,57 @@ def create_weights(n_inputs, n_hiddens, n_comps):
 
     n_units = np.concatenate(([n_inputs], n_hiddens))
 
-    for l, (N0, N1) in enumerate(zip(n_units[:-1], n_units[1:])):
-        W = tf.Variable((rng.randn(N0, N1) / np.sqrt(N0 + 1)), dtype=dtype, name='W' + str(l+1))
-        b = tf.Variable(np.zeros([1,N1]), dtype=dtype, name='b' + str(l+1))
-        Ws.append(W)
-        bs.append(b)
+    if SCE is False:
+        for l, (N0, N1) in enumerate(zip(n_units[:-1], n_units[1:])):
+            W = tf.Variable((rng.randn(N0, N1) / np.sqrt(N0 + 1)), dtype=dtype, name='W' + str(l+1))
+            b = tf.Variable(np.zeros([1,N1]), dtype=dtype, name='b' + str(l+1))
+            Ws.append(W)
+            bs.append(b)
 
-    if n_comps is None:
+        if n_comps is None:
 
-        Wm = tf.Variable((rng.randn(n_units[-1], n_inputs) / np.sqrt(n_units[-1] + 1)), dtype=dtype, name='Wm')
-        Wp = tf.Variable((rng.randn(n_units[-1], n_inputs) / np.sqrt(n_units[-1] + 1)), dtype=dtype, name='Wp')
-        bm = tf.Variable(np.zeros([1,n_inputs]), dtype=dtype, name='bm')
-        bp = tf.Variable(np.zeros([1,n_inputs]), dtype=dtype, name='bp')
+            Wm = tf.Variable((rng.randn(n_units[-1], n_inputs) / np.sqrt(n_units[-1] + 1)), dtype=dtype, name='Wm')
+            Wp = tf.Variable((rng.randn(n_units[-1], n_inputs) / np.sqrt(n_units[-1] + 1)), dtype=dtype, name='Wp')
+            bm = tf.Variable(np.zeros([1,n_inputs]), dtype=dtype, name='bm')
+            bp = tf.Variable(np.zeros([1,n_inputs]), dtype=dtype, name='bp')
 
-        return Ws, bs, Wm, bm, Wp, bp
+            return Ws, bs, Wm, bm, Wp, bp
 
+        else:
+
+            Wm = tf.Variable((rng.randn(n_units[-1], n_inputs, n_comps) / np.sqrt(n_units[-1] + 1)), dtype=dtype, name='Wm')
+            Wp = tf.Variable((rng.randn(n_units[-1], n_inputs, n_comps) / np.sqrt(n_units[-1] + 1)), dtype=dtype, name='Wp')
+            Wa = tf.Variable((rng.randn(n_units[-1], n_inputs, n_comps) / np.sqrt(n_units[-1] + 1)), dtype=dtype, name='Wa')
+            bm = tf.Variable(rng.randn(n_inputs, n_comps), dtype=dtype, name='bm')
+            bp = tf.Variable(rng.randn(n_inputs, n_comps), dtype=dtype, name='bp')
+            ba = tf.Variable(rng.randn(n_inputs, n_comps), dtype=dtype, name='ba')
     else:
+        for l, (N0, N1) in enumerate(zip(n_units[:-1], n_units[1:])):
+            W = tf.Variable((rng.randn(N0, N1) / np.sqrt(N0 + 1)), dtype=dtype, name='W' + str(l + 1), trainable=False)
+            b = tf.Variable(np.zeros([1, N1]), dtype=dtype, name='b' + str(l + 1), trainable=False)
+            Ws.append(W)
+            bs.append(b)
 
-        Wm = tf.Variable((rng.randn(n_units[-1], n_inputs, n_comps) / np.sqrt(n_units[-1] + 1)), dtype=dtype, name='Wm')
-        Wp = tf.Variable((rng.randn(n_units[-1], n_inputs, n_comps) / np.sqrt(n_units[-1] + 1)), dtype=dtype, name='Wp')
-        Wa = tf.Variable((rng.randn(n_units[-1], n_inputs, n_comps) / np.sqrt(n_units[-1] + 1)), dtype=dtype, name='Wa')
-        bm = tf.Variable(rng.randn(n_inputs, n_comps), dtype=dtype, name='bm')
-        bp = tf.Variable(rng.randn(n_inputs, n_comps), dtype=dtype, name='bp')
-        ba = tf.Variable(rng.randn(n_inputs, n_comps), dtype=dtype, name='ba')
+        if n_comps is None:
 
+            Wm = tf.Variable((rng.randn(n_units[-1], n_inputs) / np.sqrt(n_units[-1] + 1)), dtype=dtype, name='Wm', trainable=False)
+            Wp = tf.Variable((rng.randn(n_units[-1], n_inputs) / np.sqrt(n_units[-1] + 1)), dtype=dtype, name='Wp', trainable=False)
+            bm = tf.Variable(np.zeros([1, n_inputs]), dtype=dtype, name='bm', trainable=False)
+            bp = tf.Variable(np.zeros([1, n_inputs]), dtype=dtype, name='bp', trainable=False)
+
+            return Ws, bs, Wm, bm, Wp, bp
+
+        else:
+
+            Wm = tf.Variable((rng.randn(n_units[-1], n_inputs, n_comps) / np.sqrt(n_units[-1] + 1)), dtype=dtype,
+                             name='Wm', trainable=False)
+            Wp = tf.Variable((rng.randn(n_units[-1], n_inputs, n_comps) / np.sqrt(n_units[-1] + 1)), dtype=dtype,
+                             name='Wp', trainable=False)
+            Wa = tf.Variable((rng.randn(n_units[-1], n_inputs, n_comps) / np.sqrt(n_units[-1] + 1)), dtype=dtype,
+                             name='Wa', trainable=False)
+            bm = tf.Variable(rng.randn(n_inputs, n_comps), dtype=dtype, name='bm', trainable=False)
+            bp = tf.Variable(rng.randn(n_inputs, n_comps), dtype=dtype, name='bp', trainable=False)
+            ba = tf.Variable(rng.randn(n_inputs, n_comps), dtype=dtype, name='ba', trainable=False)
     return Ws, bs, Wm, bm, Wp, bp, Wa, ba
 
 def create_weights_conditional(n_inputs, n_outputs, n_hiddens, n_comps):
@@ -133,7 +160,7 @@ class GaussianMade:
     Reference: Germain et al., "MADE: Masked Autoencoder for Distribution Estimation", ICML, 2015.
     """
 
-    def __init__(self, n_inputs, n_hiddens, act_fun, input_order='sequential', mode='sequential', input=None):
+    def __init__(self, n_inputs, n_hiddens, act_fun, input_order='sequential', mode='sequential', input=None, SCE=False):
         """
         Constructor.
         :param n_inputs: number of inputs
@@ -152,8 +179,8 @@ class GaussianMade:
 
         # create network's parameters
         degrees = create_degrees(n_inputs, n_hiddens, input_order, mode)
-        Ms, Mmp = create_masks(degrees)
-        Ws, bs, Wm, bm, Wp, bp = create_weights(n_inputs, n_hiddens, None)
+        self.Ms, self.Mmp = create_masks(degrees)
+        Ws, bs, Wm, bm, Wp, bp = create_weights(n_inputs, n_hiddens, None, SCE)
         self.parms = Ws + bs + [Wm, bm, Wp, bp]
         self.input_order = degrees[0]
 
@@ -165,14 +192,14 @@ class GaussianMade:
         h = self.input
 
         # feedforward propagation
-        for l, (M, W, b) in enumerate(zip(Ms, Ws, bs)):
+        for l, (M, W, b) in enumerate(zip(self.Ms, Ws, bs)):
             h = f(tf.matmul(h, M * W) + b, name = 'h' + str(l + 1))
 
         # output means
-        self.m = tf.add(tf.matmul(h, Mmp * Wm), bm, name='m')
+        self.m = tf.add(tf.matmul(h, self.Mmp * Wm), bm, name='m')
 
         # output log precisions
-        self.logp = tf.add(tf.matmul(h, Mmp * Wp), bp, name='logp')
+        self.logp = tf.add(tf.matmul(h, self.Mmp * Wp), bp, name='logp')
 
         # random numbers driving made
         self.u = tf.exp(0.5 * self.logp) * (self.input - self.m)
