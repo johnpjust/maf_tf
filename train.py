@@ -119,6 +119,7 @@ class Trainer:
             batch_idx = streamer.gen()
             pert = rng.uniform(-0.5/128, 0.5/128, size=(batch_size, train_data.shape[1]))
             # pert = rng.normal(0, 0.00390625, size=(batch_size, train_data.shape[1]))
+            # pert = 0
             if self.has_batch_norm:
                 sess.run(self.train_op,feed_dict={self.model.input:train_data[batch_idx]+pert,self.model.training:True})
             else:
